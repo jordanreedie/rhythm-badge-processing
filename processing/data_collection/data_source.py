@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 from abc import ABCMeta, abstractmethod
 
-class DataSource(metaclass=ABCMeta):
+class DataSource:
+    __metaclass__ = ABCMeta
+
     """
     This describes a standardized interface for connecting to a data source
     """
@@ -15,7 +17,7 @@ class DataSource(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_num_meetings(self):
+    def num_complete_meetings(self):
         """
         Return the number of complete meetings on the server 
         """
@@ -29,15 +31,16 @@ class DataSource(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def read(self):
+    def read_meeting_metadata(self, meeting_key):
         """
-        Reads data from the data source
+        Get the metadata for a single meeting
         """
         pass
 
     @abstractmethod
-    def has_new_data(self):
+    def read_meeting(self, meeting_key):
         """
-        Does the data source have new data?
+        Reads data for a single meeting from the data source
         """
         pass
+
