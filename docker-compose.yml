@@ -1,0 +1,41 @@
+version: '2'
+
+volumes:
+    mongo_data: {}
+    mongo_backup: {}
+
+services:
+  mongo:
+    build: ./compose/mongo
+    volumes:
+      - mongo_data:/var/lib/mongodb/data
+
+  processing:
+    image: python:2.7
+    build: ./compose/processing
+    links: 
+      - mongo
+    depends_on:
+      - mongo
+   
+  web:
+    build: ./compose/web
+    command: python -u app.py
+    ports:
+      - "5000:5000"
+    links:
+      - mongo
+    depends_on:
+      - mongo
+
+  nginx:
+    restart: always
+    build: ./compose/nginx
+    ports:
+      - "80:80"
+    volumes:
+      - /www/static
+    volumes_from:
+      - web
+    links:
+      - web
