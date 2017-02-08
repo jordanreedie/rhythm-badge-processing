@@ -34,7 +34,16 @@ class WebConnection(DataSource):
         meeting["start_time"] = meeting_data["metadata"]["data"]["start_time"]
         meeting["is_complete"] = meeting_data["metadata"]["is_complete"]
         meeting["members"] = meeting_data["metadata"]["members"]
+        meeting["key"] = meeting_data["metadata"]["key"]
         return meeting
+
+    def list_meeting_keys(self):
+        meetings_meta = self.read_meetings_metadata()
+        meeting_keys = []
+        for meeting in meetings_meta:
+            meeting_keys.append(meeting["key"])
+    
+        return meeting_keys
 
     def read_meetings_metadata(self):
         """
@@ -51,7 +60,6 @@ class WebConnection(DataSource):
         json_resp = json.loads(resp.text)
         
         meeting_metadata = []
-        print json_resp["meetings"]
         for meeting_key in json_resp["meetings"]:
             meeting_data = json_resp["meetings"][meeting_key]
             meeting_metadata.append(self._get_metadata(meeting_data))
@@ -71,7 +79,7 @@ class WebConnection(DataSource):
 
         json_resp = json.loads(resp.text)
         
-        meeting_data = json_resp["meetings"][meeting_key]
+        meeting_data = json_resp[meeting_key]
         return self._get_metadata(meeting_data)
 
     def read_meeting(self, meeting_key):
@@ -91,6 +99,11 @@ class WebConnection(DataSource):
             print "error! status code: {}".format(resp.status_code)
 
         json_resp = json.loads(resp.text)
+        
+        batched_data = []
+        for chunk in json_resp[meeting_key]["chunks"]:
+            if "audio" in chunk["type"]:
+                batched_data.append(chunk["data"])
 
-        return json_resp["meetings"]["meeting_key"]["chunks"]
+        return batched_data
         

@@ -1,0 +1,5 @@
+git+git://github.com/jordanreedie/openbadge-analysis.git@dev
+matplotlib
+pymongo
+pandas
+requests
