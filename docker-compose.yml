@@ -27,7 +27,6 @@ services:
     build: 
       dockerfile: ./compose/web/Dockerfile
       context: .
-
     command: python /app/app.py
     ports:
       - "5000:5000"
@@ -35,15 +34,3 @@ services:
       - mongo
     depends_on:
       - mongo
-
-  nginx:
-    restart: always
-    build: ./compose/nginx
-    ports:
-      - "80:80"
-    volumes:
-      - /www/static
-    volumes_from:
-      - web
-    links:
-      - web
