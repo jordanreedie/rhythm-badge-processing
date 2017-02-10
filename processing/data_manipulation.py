@@ -20,7 +20,6 @@ def df_stitched_to_events(meeting_key, df):
     }, etc.]
     """
 
-
     # we have to rename the columns of the dataframe in case they start with a number
     # because it's possible they are invalid python identifiers
     # this gives us trouble with named tuples
@@ -37,7 +36,7 @@ def df_stitched_to_events(meeting_key, df):
         }
 
     speaking_events = []
-    # df.itertuples() yields named tuples, format: (index, <col1>=<val2>, etc.)
+    # df.itertuples() yields named tuples, format: (index, <col1>=<val1>, etc.)
     for row in df.itertuples():
         index = row[0]
         for column in members:
@@ -69,13 +68,14 @@ def df_stitched_to_events(meeting_key, df):
         if members[column]["was_speaking"] == "true":
            speaking_events.append({
                     "meeting_key": meeting_key,
-                    "member_key": column,
+                    # remove the C_ prefix to column
+                    "member_key": column[2:],
                     "speaking_start": members[column]["start_time"],
                     "speaking_end": _index_to_ts(df.index.max())
            })
         
-    #rename them back
+    #re-rename the columns
+    # C_<colname> -> <colname>
     df.rename(columns = lambda col: col[2:], inplace=True)
 
     return speaking_events
-
