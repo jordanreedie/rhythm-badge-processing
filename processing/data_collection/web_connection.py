@@ -35,6 +35,8 @@ class WebConnection(DataSource):
         meeting["is_complete"] = meeting_data["metadata"]["is_complete"]
         meeting["members"] = meeting_data["metadata"]["members"]
         meeting["key"] = meeting_data["metadata"]["key"]
+        meeting["project"] = meeting_data["metadata"]["project"]
+        meeting["end_time"] = meeting_data["metadata"]["end_time"]
         return meeting
 
     def list_meeting_keys(self):

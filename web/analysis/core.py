@@ -75,3 +75,4 @@ def speaking_turns(speaking_events):
         _increment(turns, key, 1)
         
     return turns
+

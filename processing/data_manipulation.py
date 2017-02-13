@@ -7,7 +7,7 @@ def _index_to_ts(index):
     return time.mktime(index.timetuple())
 
 
-def df_stitched_to_events(meeting_key, df):
+def df_stitched_to_events(meeting_key, project_key, df):
     """
     Takes a pandas dataframe of stitched is_speaking values
     and returns a list speaking events of the format:
@@ -17,6 +17,7 @@ def df_stitched_to_events(meeting_key, df):
         member_key: <str>,
         speaking_start: <timestamp>
         speaking_end: <timestamp>
+        project_key: <str>
     }, etc.]
     """
 
@@ -55,6 +56,7 @@ def df_stitched_to_events(meeting_key, df):
                 members[column]["was_speaking"] = "false"
                 speaking_events.append({
                     "meeting_key": meeting_key,
+                    "project_key": project_key,
                     # remove the C_ prefix to column
                     "member_key": column[2:],
                     "speaking_start": members[column]["start_time"],
@@ -68,6 +70,7 @@ def df_stitched_to_events(meeting_key, df):
         if members[column]["was_speaking"] == "true":
            speaking_events.append({
                     "meeting_key": meeting_key,
+                    "project_key": project_key,
                     # remove the C_ prefix to column
                     "member_key": column[2:],
                     "speaking_start": members[column]["start_time"],

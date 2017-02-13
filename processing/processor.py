@@ -38,12 +38,13 @@ if __name__ == "__main__":
             # convert to df
             df_meeting = json_sample2data(raw_meeting_data, True, True)
             df_meeting.metadata = metadata
-            
+            project_key = metadata["project"] 
             df_stitched = make_df_stitched(df_meeting)
-            events =  df_stitched_to_events(key, df_stitched)
+            events =  df_stitched_to_events(key, project_key, df_stitched)
             
             #put in mongo
             datastore.store_meeting(metadata, events)
+
 
         # and now, we wait
         time.sleep(20)
