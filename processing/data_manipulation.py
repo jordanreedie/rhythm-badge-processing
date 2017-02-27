@@ -4,6 +4,9 @@ import pandas
 import time
 
 def _index_to_ts(index):
+    """
+    Takes a pandas dataframe timestamp index and converts it to unix time
+    """
     return time.mktime(index.timetuple())
 
 

@@ -21,6 +21,18 @@ def array_to_json(arr):
 
     return json
 
+def _get_speaking_events(project_key, meeting_key):
+    """
+    return the speaking events for the meeting matching the given
+    project_key and meeting_key
+    """
+
+    # meeting keys are only guaranteed to be unique for a given project
+    # so we use both keys to identify
+    return [doc for doc in mongo.meeting_data.find({
+        "meeting_key": meeting_key, 
+        "project_key": project_key
+    })]
 
 @app.route('/', methods=['GET'])
 def get_projects():
@@ -47,23 +59,23 @@ def get_single_meetings_meta(project_key, meeting_key):
     """
     Return the metadata for a specific meeting in the system 
     """
-    meetings_meta = [doc for doc in mongo.meeting_meta.find(
+    meeting_meta = [doc for doc in mongo.meeting_meta.find(
         {"project": project_key, "key": meeting_key}
     )]
-    if not meetings_meta:
+    if not meeting_meta:
         return jsonify({ 
             "response": "No meetings matching the meeting_key {} exists under project {}"
             .format(meeting_key, project_key) 
         })
 
     return jsonify({
-        "metadata": array_to_json(meetings_meta)
+        "metadata": array_to_json(meeting_meta)
     })
 
 @app.route('/<project_key>/meetings/<meeting_key>/time', methods=['GET'])
 def get_speaking_time(project_key, meeting_key):
     # get all speaking events for this meeting key
-    speaking_events = [doc for doc in mongo.meeting_data.find({"meeting_key": meeting_key})]
+    speaking_events = _get_speaking_events(project_key, meeting_key)
     if not speaking_events:
         return jsonify({ "response": "No meeting for for key {}".format(meeting_key) })
 
@@ -71,7 +83,7 @@ def get_speaking_time(project_key, meeting_key):
 
 @app.route('/<project_key>/meetings/<meeting_key>/turns', methods=['GET'])
 def get_speaking_turns(project_key, meeting_key):
-    speaking_events = [doc for doc in mongo.meeting_data.find({"meeting_key": meeting_key})]
+    speaking_events = _get_speaking_events(project_key, meeting_key)
     if not speaking_events:
         return jsonify({ "response": "No meeting for for key {}".format(meeting_key) })
 
@@ -79,7 +91,7 @@ def get_speaking_turns(project_key, meeting_key):
 
 @app.route('/<project_key>/meetings/<meeting_key>/prompting', methods=['GET'])
 def get_prompting(project_key, meeting_key):
-    speaking_events = [doc for doc in mongo.meeting_data.find({"meeting_key": meeting_key})]
+    speaking_events = _get_speaking_events(project_key, meeting_key)
     if not speaking_events:
         return jsonify({ "response": "No meeting for for key {}".format(meeting_key) })
     
@@ -91,10 +103,11 @@ def get_participants():
     return jsonify({"participants": list(set(participants))})
 
 @app.route('/<project_key>/participants/<member_key>/turns', methods=['GET'])
-def get_participant_time(member_key):
-    speaking_events = [doc for doc in mongo.meeting_data.find({"member_key": member_key})]
+def get_participant_time(project_key, member_key):
+    speaking_events = _get_speaking_events(project_key, member_key)
     if not speaking_events:
-        return jsonify({ "response": "No data for for participant {}".format(member_key)})
+        return jsonify({ "response": "No data for for participant {} in project {}"
+            .format(member_key, project_key)})
 
 
     
