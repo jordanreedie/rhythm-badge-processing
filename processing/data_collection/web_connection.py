@@ -17,8 +17,18 @@ class WebConnection(DataSource):
         }
 
     def connect(self, project_key):
+        """
+        Perform any necessary setup for connecting to the data source
+        """
         self.request_base = settings.SERVER_URL
         self.project_key = project_key
+
+    def disconnect(self)
+        """
+        Disconnect from the data source and release any held resources
+        """
+        # we don't actually have to do anything here since it's all stateless
+        pass
 
     def num_complete_meetings(self):
         """
@@ -29,6 +39,12 @@ class WebConnection(DataSource):
 
 
     def _get_metadata(self, meeting_data):
+        """
+        Internal method for converting the meeting object returned from the
+        django server API to a more conveniently formatted one
+
+        :param meeting_data: the meeting object returned from the server
+        """
         meeting = {}
         meeting["uuid"] = meeting_data["metadata"]["data"]["uuid"]
         meeting["start_time"] = meeting_data["metadata"]["data"]["start_time"]
@@ -40,6 +56,10 @@ class WebConnection(DataSource):
         return meeting
 
     def list_meeting_keys(self):
+        """
+        Returns a list of the keys of all complete meetings
+        """
+
         meetings_meta = self.read_meetings_metadata()
         meeting_keys = []
         for meeting in meetings_meta:
@@ -69,6 +89,11 @@ class WebConnection(DataSource):
         return meeting_metadata
 
     def read_meeting_metadata(self, meeting_key):
+        """
+        Get the metadata for a single meeting
+        
+        :param meeting_key: key of the desired meeting
+        """
         api_endpoint = "/{}/meetings/{}".format(self.project_key, meeting_key)
         url = self.request_base + api_endpoint
         headers = self._generate_headers("False")
