@@ -3,14 +3,14 @@
 import pandas
 import time
 
-def _index_to_ts(index):
+def _index_to_ts(index):#TODO testing
     """
     Takes a pandas dataframe timestamp index and converts it to unix time
     """
     return time.mktime(index.timetuple())
 
 
-def df_stitched_to_events(meeting_key, project_key, df):
+def df_stitched_to_events(meeting_key, project_key, df): #TODO testing
     """
     Takes a pandas dataframe of stitched is_speaking values
     and returns a list speaking events of the format:

@@ -40,8 +40,8 @@ class WebConnection(DataSource):
 
     def _get_metadata(self, meeting_data):
         """
-        Internal method for converting the meeting object returned from the
-        django server API to a more conveniently formatted one
+        Internal method for extracting the metadata from the meeting 
+        object returned from the django server API 
 
         :param meeting_data: the meeting object returned from the server
         """
@@ -50,8 +50,8 @@ class WebConnection(DataSource):
         meeting["start_time"] = meeting_data["metadata"]["data"]["start_time"]
         meeting["is_complete"] = meeting_data["metadata"]["is_complete"]
         meeting["members"] = meeting_data["metadata"]["members"]
-        meeting["key"] = meeting_data["metadata"]["key"]
-        meeting["project"] = meeting_data["metadata"]["project"]
+        meeting["meeting_key"] = meeting_data["metadata"]["key"]
+        meeting["project_key"] = meeting_data["metadata"]["project"]
         meeting["end_time"] = meeting_data["metadata"]["end_time"]
         return meeting
 
@@ -63,7 +63,7 @@ class WebConnection(DataSource):
         meetings_meta = self.read_meetings_metadata()
         meeting_keys = []
         for meeting in meetings_meta:
-            meeting_keys.append(meeting["key"])
+            meeting_keys.append(meeting["meeting_key"])
     
         return meeting_keys
 

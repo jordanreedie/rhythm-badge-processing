@@ -1,13 +1,8 @@
 #!/usr/bin/env python
+from utils import get_speaking_events, increment 
 
-def _increment(json_obj, key, amt):
-    """
-    Increment the value at <key> in <json_obj> by <amt> if it exists
-    otherwise set it to one
-    """
-    json_obj[key] = json_obj[key] + amt if key in json_obj  else amt
 
-def speaking_time(speaking_events):
+def _speaking_time(speaking_events): #TODO testing
     """
     Takes a list of speaking events from a meeting
     Returns a json object indicating the total speaking time
@@ -18,11 +13,17 @@ def speaking_time(speaking_events):
     for event in speaking_events:
         key = event["member_key"]
         duration = int(event["speaking_end"]) - int(event["speaking_start"])
-        _increment(time, key, duration)
+        increment(time, key, duration)
         
     return time
 
-def prompting(speaking_events):
+def speaking_time(db, query):
+    """
+    """
+    speaking_events = get_speaking_events(db, query)
+    return _speaking_time(speaking_events)
+
+def _prompting(speaking_events): #TODO testing
     """
     Take a list of speaking events from a meeting
     Returns a json object of how many times a participant
@@ -51,18 +52,17 @@ def prompting(speaking_events):
     for event in sorted_events[1:]:
         current_speaker = event["member_key"]
         following = prompts[last_speaker] if last_speaker in prompts else {}
-        _increment(following, current_speaker, 1)
+        increment(following, current_speaker, 1)
         prompts[last_speaker] = following
         last_speaker = current_speaker
 
-
-
     return prompts
 
-        
+def prompting(db, query):
+    speaking_events = get_speaking_events(db, query)
+    return _prompting(speaking_events)
 
-
-def speaking_turns(speaking_events):
+def _speaking_turns(speaking_events): #TODO testing
     """
     Takes a list of speaking events from a meeting
     Returns a json object indicating the number of turns taken
@@ -72,7 +72,10 @@ def speaking_turns(speaking_events):
 
     for event in speaking_events:
         key = event["member_key"]
-        _increment(turns, key, 1)
+        increment(turns, key, 1)
         
     return turns
 
+def speaking_turns(db, query):
+    speaking_events = get_speaking_events(db, query)
+    return _speaking_turns(speaking_events)
