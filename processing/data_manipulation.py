@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import pandas
+import numpy
 import time
 
 def _index_to_ts(index):#TODO testing
@@ -21,7 +22,7 @@ def df_stitched_to_events(meeting_key, project_key, df): #TODO testing
         speaking_start: <timestamp>
         speaking_end: <timestamp>
         project_key: <str>
-    }, etc.]
+    }, ...]
     """
 
     # we have to rename the columns of the dataframe in case they start with a number
@@ -52,7 +53,6 @@ def df_stitched_to_events(meeting_key, project_key, df): #TODO testing
             if is_speaking and not was_speaking:
                 members[column]["was_speaking"] = "true"
                 members[column]["start_time"] = _index_to_ts(index)
-
             # a transition from true -> false of is_speaking -> was_speaking
             # marks the end of a speaking event
             elif not is_speaking and was_speaking:

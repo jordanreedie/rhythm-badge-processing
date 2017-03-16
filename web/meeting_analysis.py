@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from utils import get_speaking_events, increment 
+import utils
 
 
 def _speaking_time(speaking_events): #TODO testing
     """
     Takes a list of speaking events from a meeting
-    Returns a json object indicating the total speaking time
+    Returns a json object indicating the total speaking time in seconds
     for each member
     """
     time = {}
@@ -13,14 +13,14 @@ def _speaking_time(speaking_events): #TODO testing
     for event in speaking_events:
         key = event["member_key"]
         duration = int(event["speaking_end"]) - int(event["speaking_start"])
-        increment(time, key, duration)
+        utils.increment(time, key, duration)
         
     return time
 
 def speaking_time(db, query):
     """
     """
-    speaking_events = get_speaking_events(db, query)
+    speaking_events = utils.get_speaking_events(db, query)
     return _speaking_time(speaking_events)
 
 def _prompting(speaking_events): #TODO testing
@@ -52,14 +52,14 @@ def _prompting(speaking_events): #TODO testing
     for event in sorted_events[1:]:
         current_speaker = event["member_key"]
         following = prompts[last_speaker] if last_speaker in prompts else {}
-        increment(following, current_speaker, 1)
+        utils.increment(following, current_speaker, 1)
         prompts[last_speaker] = following
         last_speaker = current_speaker
 
     return prompts
 
 def prompting(db, query):
-    speaking_events = get_speaking_events(db, query)
+    speaking_events = utils.get_speaking_events(db, query)
     return _prompting(speaking_events)
 
 def _speaking_turns(speaking_events): #TODO testing
@@ -72,10 +72,10 @@ def _speaking_turns(speaking_events): #TODO testing
 
     for event in speaking_events:
         key = event["member_key"]
-        increment(turns, key, 1)
+        utils.increment(turns, key, 1)
         
     return turns
 
 def speaking_turns(db, query):
-    speaking_events = get_speaking_events(db, query)
+    speaking_events = utils.get_speaking_events(db, query)
     return _speaking_turns(speaking_events)

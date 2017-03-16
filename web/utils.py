@@ -18,5 +18,5 @@ def get_meta(db, query):
     """
     return [doc for doc in db.meeting_meta.find(query)]
 
-def get_speaking_events(db, query)
-    return query_table(db.processed_meetings, query)
+def get_speaking_events(db, query):
+    return query_table(db.meeting_data, query)

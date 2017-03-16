@@ -1,23 +1,21 @@
 version: '2'
 
-volumes:
-    mongo_data: {}
-    mongo_backup: {}
-
 services:
   mongo:
     build: ./compose/mongo
     ports:
         - "27017:27017"
     volumes:
-      - mongo_data:/data
+      - ./data:/data
 
   processing:
     image: python:2.7
     build: 
-      dockerfile: ./compose/processing/Dockerfile
+      dockerfile: ./compose/processing/Dockerfile.dev
       context: .
     command: python /app/processor.py
+    volumes:
+      - ./processing:/app
     links: 
       - mongo
     depends_on:
@@ -25,11 +23,13 @@ services:
    
   web:
     build: 
-      dockerfile: ./compose/web/Dockerfile
+      dockerfile: ./compose/web/Dockerfile.dev
       context: .
     command: python /app/app.py
     ports:
       - "5000:5000"
+    volumes:
+      - ./web:/app
     links:
       - mongo
     depends_on:

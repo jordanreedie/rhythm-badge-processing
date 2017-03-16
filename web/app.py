@@ -38,7 +38,7 @@ def _no_data_response(msg, *args): #TODO testing
     Generates a json response object with a given msg 
     and optional string formatting args
     """
-    return { "response": msg.format(args) }
+    return jsonify({ "response": msg.format(args) })
 
 
 @app.route('/', methods=['GET'])
@@ -46,7 +46,7 @@ def get_projects(): #TODO testing
     """
     Returns the list of the keys of the projects that have processed meetings 
     """
-    projects = [doc['project'] for doc in mongo.meeting_meta.find()]
+    projects = [doc['project_key'] for doc in mongo.meeting_meta.find()]
     return jsonify({ "projects": list(set(projects))})
 
 @app.route('/<project_key>/meetings', methods=['GET'])
@@ -54,12 +54,12 @@ def get_meetings_meta(project_key): #TODO testing
     """
     Return the metadata for each meeting in the system 
     """
-    query = { "project": project_key }
-    meeting_meta = utils.query_table(mongo.meeting_meta, query)
+    query = { "project_key": project_key }
+    meetings_meta = utils.query_table(mongo.meeting_meta, query)
     if not meetings_meta:
-        return jsonify(_no_data_response(
+        return _no_data_response(
             "No meetings have been processed for project with key {}",
-            project_key))
+            project_key)
 
     return jsonify(array_to_json(meetings_meta, "meeting_key"))
 
@@ -68,12 +68,12 @@ def get_single_meeting_meta(project_key, meeting_key): #TODO testing
     """
     Return the metadata for a specific meeting in the system 
     """
-    query = {"project": project_key, "key": meeting_key}
-    meeting_meta = utils.query_table(db.meeting_meta, query)
+    query = {"project_key": project_key, "meeting_key": meeting_key}
+    meeting_meta = utils.query_table(mongo.meeting_meta, query)
     if not meeting_meta:
-        return jsonify(_no_data_response(
+        return _no_data_response(
             "No meetings matching the meeting_key {} exist under project {}", 
-            meeting_key, project_key))
+            meeting_key, project_key)
 
     return jsonify({
         "metadata": array_to_json(meeting_meta, "meeting_key")
@@ -81,33 +81,40 @@ def get_single_meeting_meta(project_key, meeting_key): #TODO testing
 
 @app.route('/<project_key>/meetings/<meeting_key>/time', methods=['GET'])
 def get_meeting_speaking_time(project_key, meeting_key): #TODO testing
-    query = {"project": project_key, "key": meeting_key}
+    """
+    Returns the breakdown of speaking time for each user in the given meeting in seconds
+    """
+    query = {"project_key": project_key, "meeting_key": meeting_key}
     speaking_time = meeting_analysis.speaking_time(mongo, query)
     if not speaking_time:
-        return jsonify(_no_data_response("No meeting for for key {}", meeting_key))
+        return _no_data_response("No speaking events for key {}", meeting_key)
 
     return jsonify(speaking_time)
 
 @app.route('/<project_key>/meetings/<meeting_key>/turns', methods=['GET'])
 def get_meeting_speaking_turns(project_key, meeting_key): #TODO testing
-    query = {"project": project_key, "key": meeting_key}
+    """
+    Returns the breakdown of speaking turns for each user in the given meeting 
+    """
+    query = {"project_key": project_key, "meeting_key": meeting_key}
     speaking_turns = meeting_analysis.speaking_turns(mongo, query)
     if not speaking_turns:
-        return jsonify(_no_data_response("No meeting for for key {}", meeting_key))
+        return _no_data_response("No speaking events for key {}", meeting_key)
 
     return jsonify(speaking_turns)
 
 @app.route('/<project_key>/meetings/<meeting_key>/prompting', methods=['GET'])
 def get_meeting_prompting(project_key, meeting_key): #TODO testing
-    query = {"project": project_key, "key": meeting_key}
+    """
+    Return who follows whom in a meetings
+    """
+    query = {"project_key": project_key, "meeting_key": meeting_key}
     prompting = meeting_analysis.prompting(mongo, query)    
     if not prompting:
-        return jsonify(_no_data_response("No meeting for for key {}", meeting_key))
+        return _no_data_response("No speaking events for key {}", meeting_key)
     
     return jsonify(prompting)
 
 
 if __name__ == "__main__":
         app.run(host="0.0.0.0")
-
-

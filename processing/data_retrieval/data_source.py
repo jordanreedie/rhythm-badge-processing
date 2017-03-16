@@ -21,7 +21,7 @@ class DataSource:
         pass
 
     @abstractmethod
-    def disconnect(self)
+    def disconnect(self):
         """
         Disconnect from the data source and release any held resources
         """

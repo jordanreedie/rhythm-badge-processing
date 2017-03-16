@@ -18,15 +18,17 @@ class DataStore(object):
         Return a list of the keys of the processed meetings
         """
         cursor = self.db["meeting_meta"].find({})
-        return [doc["key"] for doc in cursor]
+        return [doc["meeting_key"] for doc in cursor]
         
     def store_meeting(self, meeting_meta, speaking_events):
         """
         Store a meeting in the database
         """
-        self.db["meeting_meta"].insert_one(meeting_meta)
-        self.db["meeting_data"].insert_many(speaking_events)
+        if meeting_meta:
+            self.db["meeting_meta"].insert_one(meeting_meta)
+        if speaking_events:
+            self.db["meeting_data"].insert_many(speaking_events)
 
     def get_meeting_data(self, meeting_key):
-        cursor =  self.db["meeting_data"].find({"key": meeting_key})
+        cursor =  self.db["meeting_data"].find({"meeting_key": meeting_key})
         return [doc for doc in cursor]

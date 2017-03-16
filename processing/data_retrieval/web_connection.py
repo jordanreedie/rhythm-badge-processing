@@ -7,7 +7,7 @@ from data_source import DataSource
 class WebConnection(DataSource):
     """
     Connects to the OpenBadge-Server via Rest API
-    to collect data
+    to retrieve badge data
     """
 
     def _generate_headers(self, get_file=False):
@@ -23,7 +23,7 @@ class WebConnection(DataSource):
         self.request_base = settings.SERVER_URL
         self.project_key = project_key
 
-    def disconnect(self)
+    def disconnect(self):
         """
         Disconnect from the data source and release any held resources
         """
@@ -49,6 +49,7 @@ class WebConnection(DataSource):
         meeting["uuid"] = meeting_data["metadata"]["data"]["uuid"]
         meeting["start_time"] = meeting_data["metadata"]["data"]["start_time"]
         meeting["is_complete"] = meeting_data["metadata"]["is_complete"]
+        meeting["description"] = meeting_data["metadata"]["data"]["description"]
         meeting["members"] = meeting_data["metadata"]["members"]
         meeting["meeting_key"] = meeting_data["metadata"]["key"]
         meeting["project_key"] = meeting_data["metadata"]["project"]
