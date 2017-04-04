@@ -22,10 +22,11 @@ def process_meeting(conn, datastore, key):
     df_meeting.metadata = metadata
     project_key = metadata["project_key"] 
     df_stitched = make_df_stitched(df_meeting)
-    events =  data_manipulation.df_stitched_to_events(key, project_key, df_stitched)
+    speaking_events =  data_manipulation.df_stitched_to_events(key, project_key, df_stitched)
+    merged_events = data_manipulation.merge_turns(speaking_events)
 
     # store the newly processed data in the db
-    datastore.store_meeting(metadata, events)
+    datastore.store_meeting(metadata, merged_events)
 
 def process(conn, datastore):
     """

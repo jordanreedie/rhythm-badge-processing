@@ -1,8 +1,8 @@
 version: '2'
 
 volumes:
-    mongo_data: {}
-    mongo_backup: {}
+    mongo_data:
+    mongo_backup:
 
 services:
   mongo:
@@ -27,10 +27,11 @@ services:
     build: 
       dockerfile: ./compose/web/Dockerfile
       context: .
-    command: python /app/app.py
+    command: python /app/api.py
     ports:
       - "5000:5000"
     links:
       - mongo
     depends_on:
       - mongo
+

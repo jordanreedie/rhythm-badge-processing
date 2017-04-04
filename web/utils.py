@@ -20,3 +20,22 @@ def get_meta(db, query):
 
 def get_speaking_events(db, query):
     return query_table(db.meeting_data, query)
+
+def array_to_json(arr, key): #TODO testing
+    """ 
+    convert an array of meeting objects to a single json object
+    with each meeting in the object identified by its key
+
+    :param arr: the array to convert
+    :param key: the name of the field you want to use for the key,
+      e.g. with key "meeting_key"
+       [ { "meeting_key": "245XG34", ... } ] -> { "245XG34": <obj> } 
+    """
+    json = {}
+    for ele in arr:
+        # the _id field breaks stuff so we delete it
+        # we don't do anything with it anyway
+        del[ele["_id"]]
+        json[ele[key]] = ele
+
+    return json

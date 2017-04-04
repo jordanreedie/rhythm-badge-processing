@@ -50,7 +50,7 @@ class WebConnection(DataSource):
         meeting["start_time"] = meeting_data["metadata"]["data"]["start_time"]
         meeting["is_complete"] = meeting_data["metadata"]["is_complete"]
         meeting["description"] = meeting_data["metadata"]["data"]["description"]
-        meeting["members"] = meeting_data["metadata"]["members"]
+        meeting["participants"] = meeting_data["metadata"]["members"]
         meeting["meeting_key"] = meeting_data["metadata"]["key"]
         meeting["project_key"] = meeting_data["metadata"]["project"]
         meeting["end_time"] = meeting_data["metadata"]["end_time"]
@@ -79,7 +79,9 @@ class WebConnection(DataSource):
         if resp.status_code != 200:
             #TODO
             print "error! status code: {}".format(resp.status_code)
+            return []
             
+
         json_resp = json.loads(resp.text)
         
         meeting_metadata = []
