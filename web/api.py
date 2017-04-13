@@ -1,20 +1,39 @@
 from flask import Flask, jsonify
+from flask import request
 import meeting_analysis
 import utils
 from dbclient import DbClient
 from pymongo import MongoClient
 import exceptions
+from settings import AUTH_TOKEN
+import os
+import urllib
 
 app = Flask(__name__)
 
+# mongodb_username = os.getenv('MONGODB_USERNAME', 'mongo'),
+# mongodb_password = os.getenv('MONGODB_PASSWORD', 'mongo')
 app.config.update(
     MONGODB_HOST = 'mongo',
     MONGODB_PORT = '27017',
     MONGODB_DB = 'processed_meetings',
+    # MONGODB_USERNAME = mongodb_username,
+    # MONGODB_PASSWORD = mongodb_password
 )
-
+# mongo_uri = "mongodb://{}:{}@localhost".format(mongodb_username, urllib.quote_plus(mongodb_password))
 dbclient = DbClient(MongoClient("mongo", 27017).processed_meetings)
 
+@app.before_request
+def verify_token():
+    if "health" in request.url:
+        return None
+    url_token = request.args.get('token') 
+    if not url_token:
+        return jsonify({ "error": "Valid Token Required" }), 401
+    elif url_token != AUTH_TOKEN:
+        return jsonify({ "error": "Invalid Token Provided" }), 401
+    else:
+        return None
 
 def _no_data_response(msg, *args):
     """
@@ -29,6 +48,10 @@ def _responsify(payload):
     """
     return jsonify({ "data": payload })
 
+
+@app.route('/health', methods=['GET'])
+def health():
+    return _responsify("OK!")
 
 @app.route('/meetings/', methods=['GET'])
 def get_meetings_meta():
@@ -95,6 +118,23 @@ def get_meeting_prompting(meeting_key):
         return _no_data_response("No speaking events for key {}", meeting_key)
     
     return _responsify(prompting)
+
+@app.route('/meetings/<meeting_key>/chunked_time/', methods=['GET'])
+def get_chunked_meetings(meeting_key):
+    """
+    Return the breakdown of speaking time in n-minute chunks
+    """
+    query = {"meeting_key": meeting_key}
+    events = dbclient.query("data", query)
+    
+    n = request.args.get('n', default=5)
+    if not n.isdigit() or "." in n:
+        return _errorify("Chunking value must be an integer!")
+
+    chunks = meeting_analysis.chunked_speaking_time(events, n)
+
+    return _responsify(chunks)
+
 
 @app.route('/participants/', methods=['GET'])
 def get_participants():

@@ -53,20 +53,17 @@ class WebConnection(DataSource):
         meeting["participants"] = meeting_data["metadata"]["members"]
         meeting["meeting_key"] = meeting_data["metadata"]["key"]
         meeting["project_key"] = meeting_data["metadata"]["project"]
-        meeting["end_time"] = meeting_data["metadata"]["end_time"]
+        if meeting["is_complete"]:
+        #TODO temporary stop gap until badge server is redeployed
+            meeting["end_time"] = float(meeting_data["metadata"]["end_time"])
         return meeting
 
     def list_meeting_keys(self):
         """
-        Returns a list of the keys of all complete meetings
+        Returns a list of the keys of all meetings
         """
-
         meetings_meta = self.read_meetings_metadata()
-        meeting_keys = []
-        for meeting in meetings_meta:
-            meeting_keys.append(meeting["meeting_key"])
-    
-        return meeting_keys
+        return [meeting["meeting_key"] for meeting in meetings_meta]
 
     def read_meetings_metadata(self):
         """

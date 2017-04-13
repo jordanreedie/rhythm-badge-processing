@@ -3,8 +3,8 @@ version: '2'
 services:
   mongo:
     build: ./compose/mongo
-    ports:
-        - "27017:27017"
+    expose:
+        - "27017"
     volumes:
       - ./data:/data
 
@@ -25,7 +25,7 @@ services:
     build: 
       dockerfile: ./compose/web/Dockerfile.dev
       context: .
-    command: python /app/app.py
+    command: python /app/api.py
     ports:
       - "5000:5000"
     volumes:

@@ -17,6 +17,12 @@ def process_meeting(conn, datastore, key):
 
     raw_meeting_data = conn.read_meeting(key)
     metadata = conn.read_meeting_metadata(key)
+    # if the meeting is incomplete or didnt contain any data
+    if not metadata["is_complete"] or not raw_meeting_data:
+        # store the metadata and get out
+        datastore.store_meta(metadata)
+        return
+
     # convert to df
     df_meeting = json_sample2data(raw_meeting_data, True, True)
     df_meeting.metadata = metadata
@@ -37,6 +43,7 @@ def process(conn, datastore):
     meeting_keys = conn.list_meeting_keys() 
 
     meetings_processed = datastore.list_meetings()
+    
     new_meeting_keys = [meeting for meeting in meeting_keys if meeting not in meetings_processed]
 
     # if we get new data, process it
