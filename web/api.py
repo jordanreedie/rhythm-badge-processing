@@ -88,8 +88,6 @@ def get_meeting_speaking_time(meeting_key):
     query = {"meeting_key": meeting_key}
     events = dbclient.query("data", query)
     speaking_time = meeting_analysis.speaking_time(events)
-    if not speaking_time:
-        return _no_data_response("No speaking events for key {}", meeting_key)
 
     return _responsify(speaking_time)
 
@@ -101,8 +99,6 @@ def get_meeting_speaking_turns(meeting_key):
     query = {"meeting_key": meeting_key}
     events = dbclient.query("data", query)
     speaking_turns = meeting_analysis.speaking_turns(events)
-    if not speaking_turns:
-        return _no_data_response("No speaking events for key {}", meeting_key)
 
     return _responsify(speaking_turns)
 
