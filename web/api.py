@@ -11,16 +11,11 @@ import urllib
 
 app = Flask(__name__)
 
-# mongodb_username = os.getenv('MONGODB_USERNAME', 'mongo'),
-# mongodb_password = os.getenv('MONGODB_PASSWORD', 'mongo')
 app.config.update(
     MONGODB_HOST = 'mongo',
     MONGODB_PORT = '27017',
     MONGODB_DB = 'processed_meetings',
-    # MONGODB_USERNAME = mongodb_username,
-    # MONGODB_PASSWORD = mongodb_password
 )
-# mongo_uri = "mongodb://{}:{}@localhost".format(mongodb_username, urllib.quote_plus(mongodb_password))
 dbclient = DbClient(MongoClient("mongo", 27017).processed_meetings)
 
 @app.before_request
@@ -35,6 +30,11 @@ def verify_token():
     else:
         return None
 
+def does_meeting_exist(meeting_key):
+    query = {"meeting_key": meeting_key}
+    meeting_meta = dbclient.query("meta", query)
+    return bool(meeting_meta)
+
 def _no_data_response(msg, *args):
     """
     Generates a json response object with a given msg 
@@ -47,6 +47,14 @@ def _responsify(payload):
     return a response with the payload
     """
     return jsonify({ "data": payload })
+
+def _get_participants(meeting_key):
+    query = {"meeting_key": meeting_key}
+    meeting_meta = dbclient.query("meta", query)
+    participants = []
+    if meeting_meta:
+        participants = meeting_meta[0]["participants"]
+    return participants 
 
 
 @app.route('/health', methods=['GET'])
@@ -61,9 +69,8 @@ def get_meetings_meta():
     # query all
     meetings_meta = dbclient.query("meta", "*")
     if not meetings_meta:
-        return _no_data_response(
-            "No meetings have been processed yet",
-            )
+        return _no_data_response("No meetings have been processed yet")
+
     return _responsify(meetings_meta)
 
 @app.route('/meetings/<meeting_key>/', methods=['GET'])
@@ -85,9 +92,18 @@ def get_meeting_speaking_time(meeting_key):
     """
     Returns the breakdown of speaking time for each user in the given meeting in seconds
     """
+    if not does_meeting_exist(meeting_key):
+        return _no_data_response(
+            "No meetings matching the meeting_key {} have been processed yet", 
+            meeting_key)
+
     query = {"meeting_key": meeting_key}
     events = dbclient.query("data", query)
     speaking_time = meeting_analysis.speaking_time(events)
+
+    if not speaking_time:
+        for part in _get_participants(meeting_key):
+            speaking_time[part] = 0
 
     return _responsify(speaking_time)
 
@@ -96,9 +112,18 @@ def get_meeting_speaking_turns(meeting_key):
     """
     Returns the breakdown of speaking turns for each user in the given meeting 
     """
+    if not does_meeting_exist(meeting_key):
+        return _no_data_response(
+            "No meetings matching the meeting_key {} have been processed yet", 
+            meeting_key)
+
     query = {"meeting_key": meeting_key}
     events = dbclient.query("data", query)
+
     speaking_turns = meeting_analysis.speaking_turns(events)
+    if not speaking_turns:
+        for part in _get_participants(meeting_key):
+            speaking_turns[part] = 0
 
     return _responsify(speaking_turns)
 
@@ -116,34 +141,36 @@ def get_meeting_prompting(meeting_key):
     return _responsify(prompting)
 
 @app.route('/meetings/<meeting_key>/chunked_time/', methods=['GET'])
-def get_chunked_meetings(meeting_key):
+def get_chunked_time(meeting_key):
     """
     Return the breakdown of speaking time in n-minute chunks
     """
     query = {"meeting_key": meeting_key}
     events = dbclient.query("data", query)
     
-    n = request.args.get('n', default=5)
+    n = str(request.args.get('n', default=5))
     if not n.isdigit() or "." in n:
         return _errorify("Chunking value must be an integer!")
 
-    chunks = meeting_analysis.chunked_speaking_time(events, n)
+    chunks = meeting_analysis.chunked_speaking_time(events, int(n))
 
     return _responsify(chunks)
 
-
-@app.route('/participants/', methods=['GET'])
-def get_participants():
+@app.route('/meetings/<meeting_key>/chunked_turns/', methods=['GET'])
+def get_chunked_turns(meeting_key):
     """
-    Return the list of all participants in all meetings
+    Return the breakdown of speaking turns in n-minute chunks
     """
-    results = utils.query_table(mongo.meeting_meta, query)
-    if not results:
-        return _no_data_response("No meetings have been processed")
+    query = {"meeting_key": meeting_key}
+    events = dbclient.query("data", query)
+    
+    n = str(request.args.get('n', default=5))
+    if not n.isdigit() or "." in n:
+        return _errorify("Chunking value must be an integer!")
 
-    participants = [ele["participants"] for ele in results]
-    flatten = lambda l: [item for sublist in l for item in sublist]
-    return _responsify({ "participants": flatten(participants) })
+    chunks = meeting_analysis.chunked_speaking_turns(events, int(n))
+
+    return _responsify(chunks)
 
     
 
