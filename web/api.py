@@ -172,7 +172,20 @@ def get_chunked_turns(meeting_key):
 
     return _responsify(chunks)
 
-    
+@app.route('/participants/<participant_key>/in_progress/', methods=['GET'])
+def get_in_progress(participant_key):
+    """
+    Return the meeting key of the in progress meeting for the given 
+    participant, or null otherwise
+    """
+    query = { "participants": participant_key, "is_complete": False }
+    meta = dbclient.query("meta", query)
+    payload = None
+    if meta:
+        payload = meta[0]["meeting_key"]
+
+    return _responsify(payload)
+        
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
