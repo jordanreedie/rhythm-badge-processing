@@ -2,7 +2,7 @@
 import utils
 
 
-def chunked_speaking_time(speaking_events, func, n=5):
+def chunked_speaking_time(speaking_events, n=5):
     """
     Takes a list of speaking events from a meeting and splits it into
     n-minute speaking time breakdowns
@@ -11,6 +11,10 @@ def chunked_speaking_time(speaking_events, func, n=5):
     :param n: how long each chunk is, in minutes
     """
     time = [{}]
+    # if there are no events thats it thats all 
+    if len(speaking_events) == 0:
+        return []
+
     chunk_begin = speaking_events[0]["speaking_start"]
     minutes = 60
     chunk_len = n * minutes
@@ -130,6 +134,10 @@ def speaking_turns(speaking_events):
 def chunked_speaking_turns(speaking_events, n=5):
     
     turns = [{}]
+    # if there are no events thats it thats all 
+    if len(speaking_events) == 0:
+        return []
+
     chunk_start = speaking_events[0]["speaking_start"]
     minutes = 60
     chunk_len = n * minutes

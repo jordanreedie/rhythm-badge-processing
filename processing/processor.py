@@ -63,4 +63,6 @@ if __name__ == "__main__":
     # we want to loop forever
     while True:
         process(conn, datastore)
+        # we dont expect new meetings to be occurring particularly quickly
+        # so this just limits responsiveness after a meeting has occurred
         time.sleep(settings.SLEEP_TIME)

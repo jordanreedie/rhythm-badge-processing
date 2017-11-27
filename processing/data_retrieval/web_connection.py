@@ -54,7 +54,6 @@ class WebConnection(DataSource):
         meeting["meeting_key"] = meeting_data["metadata"]["key"]
         meeting["project_key"] = meeting_data["metadata"]["project"]
         if meeting["is_complete"]:
-        #TODO temporary stop gap until badge server is redeployed
             meeting["end_time"] = float(meeting_data["metadata"]["end_time"])
         return meeting
 
