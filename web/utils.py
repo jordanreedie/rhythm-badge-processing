@@ -21,7 +21,7 @@ def get_meta(db, query):
 def get_speaking_events(db, query):
     return query_table(db.meeting_data, query)
 
-def array_to_json(arr, key): #TODO testing
+def array_to_json(arr, key):
     """ 
     convert an array of meeting objects to a single json object
     with each meeting in the object identified by its key
@@ -39,3 +39,24 @@ def array_to_json(arr, key): #TODO testing
         json[ele[key]] = ele
 
     return json
+
+def no_data_response(msg, *args):
+    """
+    Generates a json response object with a given msg 
+    and optional string formatting args
+    """
+    return jsonify({ "error": msg.format(args) }), 503
+
+def responsify(payload):
+    """
+    return a response with the payload
+    """
+    return jsonify({ "data": payload })
+
+def get_participants(meeting_key):
+    query = {"meeting_key": meeting_key}
+    meeting_meta = dbclient.query("meta", query)
+    participants = []
+    if meeting_meta:
+        participants = meeting_meta[0]["participants"]
+    return participants 

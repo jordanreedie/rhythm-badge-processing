@@ -4,11 +4,18 @@ import json
 import settings
 from data_source import DataSource
 
-class WebConnection(DataSource):
+class BadgeServer():
     """
     Connects to the OpenBadge-Server via Rest API
     to retrieve badge data
     """
+    def __init__(self, project_key):
+        """
+        Perform any necessary setup for connecting to the data source
+        """
+        self.request_base = settings.SERVER_URL
+        self.project_key = project_key
+        self.init()
 
     def _generate_headers(self, get_file=False):
         return { 
@@ -16,19 +23,6 @@ class WebConnection(DataSource):
             "x-get-file": get_file
         }
 
-    def connect(self, project_key):
-        """
-        Perform any necessary setup for connecting to the data source
-        """
-        self.request_base = settings.SERVER_URL
-        self.project_key = project_key
-
-    def disconnect(self):
-        """
-        Disconnect from the data source and release any held resources
-        """
-        # we don't actually have to do anything here since it's all stateless
-        pass
 
     def num_complete_meetings(self):
         """

@@ -6,9 +6,33 @@ import pandas
 import matplotlib.pyplot as plt
 import data_manipulation
 from datastore import DataStore
-from data_retrieval.web_connection import WebConnection
+from badge_server import BadgeServer
 
 
+def data_to_events(raw_data, metadata):
+    """
+    convert raw meeting data to speaking events 
+    """
+    # convert to df 
+    df_meeting = json_sample2data(raw_meeting_data, True, True)
+    df_meeting.metadata = metadata
+    df_stitched = make_df_stitched(df_meeting)
+    project_key = metadata["project_key"] 
+    meeting_key = metadata["meeting_key"]
+    # convert df to speaking events for storage
+    speaking_events = data_manipulation.df_stitched_to_events(meeting_key, project_key, df_stitched)
+
+    # merge any events that are close enough to be considered one turn
+    merged_events = data_manipulation.merge_turns(speaking_events)
+
+    return merged_events
+
+def update_participant_meetings(metadata, datastore):
+    participants = metadata["participants"]
+    meeting_key = metadata["meeting_key"]
+
+    for participant in participants:
+        datastore.store_participant_meeting(participant, meeting_key)
 
 def process_meeting(conn, datastore, key):
     """
@@ -23,16 +47,15 @@ def process_meeting(conn, datastore, key):
         datastore.store_meta(metadata)
         return
 
-    # convert to df
-    df_meeting = json_sample2data(raw_meeting_data, True, True)
-    df_meeting.metadata = metadata
-    project_key = metadata["project_key"] 
-    df_stitched = make_df_stitched(df_meeting)
-    speaking_events =  data_manipulation.df_stitched_to_events(key, project_key, df_stitched)
-    merged_events = data_manipulation.merge_turns(speaking_events)
-
+    speaking_events = data_to_events(raw_meeting_data, metadata) 
     # store the newly processed data in the db
     datastore.store_meeting(metadata, merged_events)
+
+    # TODO perfom some basic analysis and store in the db
+    # analysis is currently done on a per-request basis. 
+
+    #TODO store participant info
+    update_participants(metadata, datastore)
 
 def process(conn, datastore):
     """
@@ -55,14 +78,13 @@ if __name__ == "__main__":
     # how do we know what project to use?
     # we can probably assume we want to process all of them?
     # settings for now
-    conn = WebConnection()
-    conn.connect(settings.project_key)
+    badge_server = BadgeServer(settings.project_key)
     datastore = DataStore()
     datastore.connect()
 
     # we want to loop forever
     while True:
-        process(conn, datastore)
+        process(badge_server, datastore)
         # we dont expect new meetings to be occurring particularly quickly
         # so this just limits responsiveness after a meeting has occurred
         time.sleep(settings.SLEEP_TIME)
