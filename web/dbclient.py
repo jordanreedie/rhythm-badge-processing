@@ -19,11 +19,22 @@ class DbClient():
         data = dbclient.query("data", query)
         return data
 
-    def query(self, table, query):
+    def _get_table(table):
+        query_table = None
         if table == "meta":
             query_table = "meeting_meta" 
-        else:
+        elif table == "data":
             query_table = "meeting_data"
+        elif query_table == "participants":
+            query_table = "participants"
+        else:
+            #TODO error
+            pass
+        return query_table
+
+    def query(self, table, query):
+
+        query_table = _get_table(table)
 
         if query == "*":
             docs = [doc for doc in self.db[query_table].find()]
@@ -34,3 +45,13 @@ class DbClient():
             del doc["_id"]
     
         return docs
+
+    def count(self, table, query):
+        query_table = _get_table(table)
+        if query == "*":
+            count = [doc for doc in self.db[query_table].count()]
+        else:
+            count = [doc for doc in self.db[query_table].count(query)]
+
+        return count
+

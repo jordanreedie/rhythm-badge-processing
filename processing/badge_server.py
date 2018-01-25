@@ -49,6 +49,7 @@ class BadgeServer():
         meeting["project_key"] = meeting_data["metadata"]["project"]
         if meeting["is_complete"]:
             meeting["end_time"] = float(meeting_data["metadata"]["end_time"])
+
         return meeting
 
     def list_meeting_keys(self):
@@ -95,6 +96,7 @@ class BadgeServer():
         if resp.status_code != 200:
             #TODO
             print "error! status code: {}".format(resp.status_code)
+            return []
         
 
         json_resp = json.loads(resp.text)
@@ -117,6 +119,7 @@ class BadgeServer():
         if resp.status_code != 200:
             #TODO
             print "error! status code: {}".format(resp.status_code)
+            return []
 
         json_resp = json.loads(resp.text)
         

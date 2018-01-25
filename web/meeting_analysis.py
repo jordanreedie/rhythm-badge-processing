@@ -160,5 +160,4 @@ def chunked_speaking_turns(speaking_events, n=5):
             chunk_end = chunk_start + chunk_len
             turns.append({})
         
-
     return turns

@@ -54,7 +54,6 @@ def process_meeting(conn, datastore, key):
     # TODO perfom some basic analysis and store in the db
     # analysis is currently done on a per-request basis. 
 
-    #TODO store participant info
     update_participants(metadata, datastore)
 
 def process(conn, datastore):

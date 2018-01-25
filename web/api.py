@@ -20,6 +20,7 @@ dbclient = DbClient(MongoClient("mongo", 27017).processed_meetings)
 
 @app.before_request
 def verify_token():
+    # TODO make this a little more secure
     if "/health" in request.url:
         return None
     url_token = request.args.get('token') 
@@ -34,7 +35,10 @@ def verify_token():
 def health():
     return utils.responsify("OK!")
 
-###### MEETING ENDPOINTS #######
+###################################
+######## MEETING ENDPOINTS ########
+###################################
+
 @app.route('/meetings/', methods=['GET'])
 def get_meetings():
     """
@@ -46,6 +50,13 @@ def get_meetings():
         return utils.no_data_response("No meetings have been processed yet")
 
     return utils.responsify(meetings_meta)
+
+@app.route('/meetings/count', methods=['GET'])
+def get_num_participants():
+    """
+    Return the total number of meetings
+    """
+    return utils.responsify(dbclient.count("meta", "*"))
 
 @app.route('/meetings/<meeting_key>/', methods=['GET'])
 def get_single_meeting(meeting_key):
@@ -138,14 +149,15 @@ def get_chunked_turns(meeting_key):
 
     return utils.responsify(chunks)
 
+###################################
 ###### PARTICIPANT ENDPOINTS ######
+###################################
+
 @app.route('/participants/<participant_key>/in_progress/', methods=['GET'])
 def get_in_progress(participant_key):
     """
     Return the meeting key of the in progress meeting for the given 
     participant, or null otherwise
-
-    For integration with Lyra
     """
     query = { "participants": participant_key, "is_complete": False }
     meta = dbclient.query("meta", query)
@@ -155,10 +167,26 @@ def get_in_progress(participant_key):
 
     return utils.responsify(payload)
 
+@app.route('/participants/count', methods=['GET'])
 def get_num_participants():
-    
+    """
+    Return the total number of unique participants
+    """
+    return utils.responsify(dbclient.count("participants", "*"))
 
+@app.route('/participants/<participant_key>/speaking_time/', methods=['GET'])
+def get_participant_total_minutes(participant_key):
+    """
+    Return the total number of minutes spoken for a given participant
+    """
+    pass
         
+@app.route('/participants/<participant_key>/speaking_turns/', methods=['GET'])
+def get_participant_total_minutes(participant_key):
+    """
+    Return the total number of turns taken for a given participant
+    """
+    pass
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
