@@ -14,7 +14,7 @@ services:
       - mongo_data:/data
 
   processing:
-    image: python:2.7
+    image: proc/python
     restart: always
     build: 
       dockerfile: ./compose/processing/Dockerfile

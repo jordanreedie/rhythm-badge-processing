@@ -2,7 +2,6 @@
 import requests
 import json
 import settings
-from data_source import DataSource
 
 class BadgeServer():
     """
@@ -15,9 +14,8 @@ class BadgeServer():
         """
         self.request_base = settings.SERVER_URL
         self.project_key = project_key
-        self.init()
 
-    def _generate_headers(self, get_file=False):
+    def _generate_headers(self, get_file="false"):
         return { 
             "x-appkey": settings.APPKEY,
             "x-get-file": get_file
@@ -41,7 +39,7 @@ class BadgeServer():
         """
         meeting = {}
         meeting["uuid"] = meeting_data["metadata"]["data"]["uuid"]
-        meeting["start_time"] = meeting_data["metadata"]["data"]["start_time"]
+        meeting["start_time"] = float(meeting_data["metadata"]["data"]["start_time"])
         meeting["is_complete"] = meeting_data["metadata"]["is_complete"]
         meeting["description"] = meeting_data["metadata"]["data"]["description"]
         meeting["participants"] = meeting_data["metadata"]["members"]
@@ -54,10 +52,12 @@ class BadgeServer():
 
     def list_meeting_keys(self):
         """
-        Returns a list of the keys of all meetings
+        Returns a dict of the mapping of keys to uuids of all meetings
         """
         meetings_meta = self.read_meetings_metadata()
-        return [meeting["meeting_key"] for meeting in meetings_meta]
+        # we want a dict of meeting_key : meeting_uuid
+        meeting_uuids = { meeting["meeting_key"]: meeting["uuid"] for meeting in meetings_meta }
+        return meeting_uuids
 
     def read_meetings_metadata(self):
         """
@@ -70,8 +70,8 @@ class BadgeServer():
         if resp.status_code != 200:
             #TODO
             print "error! status code: {}".format(resp.status_code)
+            print resp.text
             return []
-            
 
         json_resp = json.loads(resp.text)
         
@@ -82,36 +82,36 @@ class BadgeServer():
 
         return meeting_metadata
 
-    def read_meeting_metadata(self, meeting_key):
+    def read_meeting_metadata(self, meeting_key, meeting_uuid):
         """
         Get the metadata for a single meeting
         
         :param meeting_key: key of the desired meeting
         """
-        api_endpoint = "/{}/meetings/{}".format(self.project_key, meeting_key)
+        api_endpoint = "/{}/meetings/{}".format(self.project_key, meeting_uuid)
         url = self.request_base + api_endpoint
-        headers = self._generate_headers("False")
+        headers = self._generate_headers("false")
         resp = requests.get(url, headers=headers)
                 
         if resp.status_code != 200:
             #TODO
-            print "error! status code: {}".format(resp.status_code)
+            print "error reading meeting {}! status code: {}".format(meeting_key, resp.status_code)
+            print resp.text
             return []
         
 
         json_resp = json.loads(resp.text)
-        
         meeting_data = json_resp[meeting_key]
         return self._get_metadata(meeting_data)
 
-    def read_meeting(self, meeting_key):
+    def read_meeting(self, meeting_key, meeting_uuid):
         """
         Get the data for a single meeting
         
         :param meeting_key: key of the meeting to grab
         """
 
-        api_endpoint = "/{}/meetings/{}".format(self.project_key, meeting_key)
+        api_endpoint = "/{}/meetings/{}".format(self.project_key, meeting_uuid)
         url = self.request_base + api_endpoint
         headers = self._generate_headers("true")
         resp = requests.get(url, headers=headers)

@@ -9,7 +9,7 @@ services:
       - ./data:/data
 
   processing:
-    image: python:2.7
+    image: proc/python
     build: 
       dockerfile: ./compose/processing/Dockerfile.dev
       context: .

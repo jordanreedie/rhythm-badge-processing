@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from flask import request
+from flask_cors import CORS
 import meeting_analysis
 import utils
 from dbclient import DbClient
@@ -16,6 +17,8 @@ app.config.update(
     MONGODB_PORT = '27017',
     MONGODB_DB = 'processed_meetings',
 )
+CORS(app)
+
 dbclient = DbClient(MongoClient("mongo", 27017).processed_meetings)
 
 @app.before_request
@@ -51,14 +54,27 @@ def get_meetings():
 
     return utils.responsify(meetings_meta)
 
-@app.route('/meetings/count', methods=['GET'])
-def get_num_participants():
+@app.route('/meetings/count/', methods=['GET'])
+def get_num_meetings():
     """
     Return the total number of meetings
     """
     return utils.responsify(dbclient.count("meta", "*"))
 
-@app.route('/meetings/<meeting_key>/', methods=['GET'])
+@app.route('/meetings/recent/', methods=['GET'])
+def get_recent_meeting():
+    """
+    Return the metadata for most recent meeting
+    """
+
+    meeting_meta = dbclient.get_most_recent_meeting()
+    if not meeting_meta:
+        return utils.no_data_response(
+            "No meetings have been processed yet")
+
+    return utils.responsify(meeting_meta)
+
+@app.route('/meetings/meta/<meeting_key>/', methods=['GET'])
 def get_single_meeting(meeting_key):
     """
     Return the metadata for a specific meeting in the system 
@@ -71,7 +87,7 @@ def get_single_meeting(meeting_key):
 
     return utils.responsify(meeting_meta[0])
 
-@app.route('/meetings/<meeting_key>/time/', methods=['GET'])
+@app.route('/meetings/time/<meeting_key>/', methods=['GET'])
 def get_meeting_speaking_time(meeting_key):
     """
     Returns the breakdown of speaking time for each user in the given meeting in seconds
@@ -89,7 +105,7 @@ def get_meeting_speaking_time(meeting_key):
 
     return utils.responsify(speaking_time)
 
-@app.route('/meetings/<meeting_key>/turns/', methods=['GET'])
+@app.route('/meetings/turns/<meeting_key>/', methods=['GET'])
 def get_meeting_speaking_turns(meeting_key):
     """
     Returns the breakdown of speaking turns for each user in the given meeting 
@@ -107,7 +123,7 @@ def get_meeting_speaking_turns(meeting_key):
 
     return utils.responsify(speaking_turns)
 
-@app.route('/meetings/<meeting_key>/prompting/', methods=['GET'])
+@app.route('/meetings/prompting/<meeting_key>/', methods=['GET'])
 def get_meeting_prompting(meeting_key):
     """
     Return who follows whom in a meetings
@@ -119,7 +135,7 @@ def get_meeting_prompting(meeting_key):
     
     return utils.responsify(prompting)
 
-@app.route('/meetings/<meeting_key>/chunked_time/', methods=['GET'])
+@app.route('/meetings/chunked_time/<meeting_key>/', methods=['GET'])
 def get_chunked_time(meeting_key):
     """
     Return the breakdown of speaking time in n-minute chunks
@@ -134,7 +150,7 @@ def get_chunked_time(meeting_key):
 
     return utils.responsify(chunks)
 
-@app.route('/meetings/<meeting_key>/chunked_turns/', methods=['GET'])
+@app.route('/meetings/chunked_turns/<meeting_key>/', methods=['GET'])
 def get_chunked_turns(meeting_key):
     """
     Return the breakdown of speaking turns in n-minute chunks
@@ -149,11 +165,49 @@ def get_chunked_turns(meeting_key):
 
     return utils.responsify(chunks)
 
+############################
+## AGGREGATE MEETING DATA ##
+############################
+@app.route('/meetings/time/', methods=['GET'])
+def get_total_minutes_spoken():
+    start_time_agg = dbclient.db["speaking_events"].aggregate([
+        {
+            "$group": {
+                "_id": None,
+                "total": {
+                    "$sum": "$speaking_start"
+                }
+            }
+        }
+    ])
+
+    start_time_sum = list(start_time_agg)[0]["total"]
+    end_time_agg = dbclient.db["speaking_events"].aggregate([
+        {
+            "$group": {
+                "_id": None,
+                "total": { 
+                    "$sum": "$speaking_end"
+                }
+            }
+        }
+    ])
+
+
+    end_time_sum = list(end_time_agg)[0]["total"]
+    seconds_spoken = end_time_sum - start_time_sum
+
+    return utils.responsify(int(seconds_spoken/60))
+
+@app.route('/meetings/turns/', methods=['GET'])
+def get_total_turns_taken():
+    return utils.responsify(dbclient.count("data", "*"))
+
 ###################################
 ###### PARTICIPANT ENDPOINTS ######
 ###################################
 
-@app.route('/participants/<participant_key>/in_progress/', methods=['GET'])
+@app.route('/participants/in_progress/<participant_key>/', methods=['GET'])
 def get_in_progress(participant_key):
     """
     Return the meeting key of the in progress meeting for the given 
@@ -167,22 +221,22 @@ def get_in_progress(participant_key):
 
     return utils.responsify(payload)
 
-@app.route('/participants/count', methods=['GET'])
+@app.route('/participants/count/', methods=['GET'])
 def get_num_participants():
     """
     Return the total number of unique participants
     """
     return utils.responsify(dbclient.count("participants", "*"))
 
-@app.route('/participants/<participant_key>/speaking_time/', methods=['GET'])
+@app.route('/participants/speaking_time/<participant_key>/', methods=['GET'])
 def get_participant_total_minutes(participant_key):
     """
     Return the total number of minutes spoken for a given participant
     """
     pass
         
-@app.route('/participants/<participant_key>/speaking_turns/', methods=['GET'])
-def get_participant_total_minutes(participant_key):
+@app.route('/participants/speaking_turns/<participant_key>/', methods=['GET'])
+def get_participant_total_turns(participant_key):
     """
     Return the total number of turns taken for a given participant
     """

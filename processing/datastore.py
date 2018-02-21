@@ -48,7 +48,7 @@ class DataStore(object):
     def store_participant_meeting(self, participant_key, meeting_key):
         query = { "participant_key": participant_key }
         data = { "$addToSet": { "meeting_key": meeting_key } }
-        self.db["participants"].update(query, data)
+        self.db["participants"].update(query, data, True)
     
     def list_participants(self):
         return [part["meeting_key"] for part in self.db["participants"].find()]
