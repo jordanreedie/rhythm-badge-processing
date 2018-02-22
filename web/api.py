@@ -207,6 +207,21 @@ def get_total_turns_taken():
 ###### PARTICIPANT ENDPOINTS ######
 ###################################
 
+@app.route('/participants/', methods=['GET'])
+def get_participants():
+    """
+    Return the total number of unique participants
+    """
+    return utils.responsify(dbclient.query("participants", "*"))
+
+@app.route('/participants/count/', methods=['GET'])
+def get_num_participants():
+    """
+    Return the total number of unique participants
+    """
+    return utils.responsify(dbclient.count("participants", "*"))
+
+
 @app.route('/participants/in_progress/<participant_key>/', methods=['GET'])
 def get_in_progress(participant_key):
     """
@@ -220,13 +235,6 @@ def get_in_progress(participant_key):
         payload = meta[0]["meeting_key"]
 
     return utils.responsify(payload)
-
-@app.route('/participants/count/', methods=['GET'])
-def get_num_participants():
-    """
-    Return the total number of unique participants
-    """
-    return utils.responsify(dbclient.count("participants", "*"))
 
 @app.route('/participants/speaking_time/<participant_key>/', methods=['GET'])
 def get_participant_total_minutes(participant_key):

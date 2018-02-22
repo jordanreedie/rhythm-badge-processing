@@ -27,12 +27,14 @@ def data_to_events(raw_data, metadata):
 
     return merged_events
 
-def update_participant_meetings(metadata, datastore):
+def update_participant_meetings(conn, datastore, metadata):
     participants = metadata["participants"]
     meeting_key = metadata["meeting_key"]
 
+
     for participant in participants:
-        datastore.store_participant_meeting(participant, meeting_key)
+        name = conn.get_participant_name(participant)
+        datastore.store_participant_meeting(participant, name, meeting_key)
 
 def process_meeting(conn, datastore, key, uuid):
     """
@@ -54,7 +56,7 @@ def process_meeting(conn, datastore, key, uuid):
     # TODO perfom some basic analysis and store in the db
     # analysis is currently done on a per-request basis. 
 
-    update_participant_meetings(metadata, datastore)
+    update_participant_meetings(conn, datastore, metadata)
 
 def process_new_meetings(conn, datastore):
     """

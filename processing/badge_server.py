@@ -14,20 +14,42 @@ class BadgeServer():
         """
         self.request_base = settings.SERVER_URL
         self.project_key = project_key
+        self.badge_name_map = {}
 
     def _generate_headers(self, get_file="false"):
         return { 
             "x-appkey": settings.APPKEY,
-            "x-get-file": get_file
+            "x-get-file": get_file,
+            "x-hub-uuid": settings.HUB_UUID
         }
 
+    def _make_request(self, endpoint, use_project_key=True, request_file="false"):
+        # because the badge server api is funky af
+        if use_project_key:
+            api_endpoint = "/{}/{}".format(self.project_key, endpoint)
+        else:
+            api_endpoint = "/{}/".format(endpoint)
 
-    def num_complete_meetings(self):
+        headers = self._generate_headers(request_file)
+        url = self.request_base + api_endpoint
+        resp = requests.get(url, headers=headers)
+
+        return resp
+
+    def _request_badge_name(self, key):
         """
-        Returns the number of complete meetings on the server
+        Request badge name from server
+
+        Returns the name as a String
         """
-        metadata = self.read_meetings_metadata()
-        return len(metadata)
+        resp = self._make_request("badges/{}".format(key), use_project_key=False)
+        if resp.status_code != 200:
+            print "error! status code: {}".format(resp.status_code)
+            print resp.text
+            return 
+
+        json_resp = json.loads(resp.text)
+        return json_resp["name"]
 
 
     def _get_metadata(self, meeting_data):
@@ -50,6 +72,13 @@ class BadgeServer():
 
         return meeting
 
+    def num_complete_meetings(self):
+        """
+        Returns the number of complete meetings on the server
+        """
+        metadata = self.read_meetings_metadata()
+        return len(metadata)
+
     def list_meeting_keys(self):
         """
         Returns a dict of the mapping of keys to uuids of all meetings
@@ -63,10 +92,8 @@ class BadgeServer():
         """
         Get the metadata for all meetings
         """
-        api_endpoint = "/{}/meetings".format(self.project_key)
-        headers = self._generate_headers("false")
-        url = self.request_base + api_endpoint
-        resp = requests.get(url, headers=headers)
+        resp = self._make_request("meetings")
+
         if resp.status_code != 200:
             #TODO
             print "error! status code: {}".format(resp.status_code)
@@ -88,10 +115,7 @@ class BadgeServer():
         
         :param meeting_key: key of the desired meeting
         """
-        api_endpoint = "/{}/meetings/{}".format(self.project_key, meeting_uuid)
-        url = self.request_base + api_endpoint
-        headers = self._generate_headers("false")
-        resp = requests.get(url, headers=headers)
+        resp = self._make_request("meetings/{}".format(meeting_uuid))
                 
         if resp.status_code != 200:
             #TODO
@@ -110,11 +134,7 @@ class BadgeServer():
         
         :param meeting_key: key of the meeting to grab
         """
-
-        api_endpoint = "/{}/meetings/{}".format(self.project_key, meeting_uuid)
-        url = self.request_base + api_endpoint
-        headers = self._generate_headers("true")
-        resp = requests.get(url, headers=headers)
+        resp = self._make_request("meetings/{}".format(meeting_uuid), request_file="true")
                 
         if resp.status_code != 200:
             #TODO
@@ -130,3 +150,15 @@ class BadgeServer():
 
         return batched_data
         
+    def get_participant_name(self, key):
+        """
+        Look up the participant name in our internal map or request from server
+        and update internal mapping if not exists
+
+        Returns the name as a String
+        """
+        if key in self.badge_name_map:
+            return self.badge_name_map[key]
+        else:
+            self.badge_name_map[key] = self._request_badge_name(key)
+            return self.badge_name_map[key]

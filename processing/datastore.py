@@ -45,9 +45,13 @@ class DataStore(object):
         cursor =  self.db["speaking_events"].find({"meeting_key": meeting_key})
         return [doc for doc in cursor]
 
-    def store_participant_meeting(self, participant_key, meeting_key):
+    def store_participant_meeting(self, participant_key, participant_name, meeting_key):
         query = { "participant_key": participant_key }
-        data = { "$addToSet": { "meeting_key": meeting_key } }
+        data =  { 
+            "$addToSet": { "meeting_key": meeting_key },
+            "$setOnInsert": { "name": participant_name}
+        }
+
         self.db["participants"].update(query, data, True)
     
     def list_participants(self):
