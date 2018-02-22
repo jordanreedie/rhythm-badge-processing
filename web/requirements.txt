@@ -1,4 +1,4 @@
 flask
 Flask-PyMongo
-uwsgi
-
+gunicorn
+flask-cors

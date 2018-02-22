@@ -6,14 +6,16 @@ volumes:
 
 services:
   mongo:
+    restart: always
     build: ./compose/mongo
-    ports:
-        - "27017:27017"
+    expose:
+        - "27017"
     volumes:
       - mongo_data:/data
 
   processing:
-    image: python:2.7
+    image: proc/python
+    restart: always
     build: 
       dockerfile: ./compose/processing/Dockerfile
       context: .
@@ -22,16 +24,32 @@ services:
       - mongo
     depends_on:
       - mongo
-   
+
   web:
     build: 
       dockerfile: ./compose/web/Dockerfile
       context: .
-    command: python /app/api.py
-    ports:
-      - "5000:5000"
+    restart: always
+    command: /usr/local/bin/gunicorn -w 4 --bind :8080 api:app
+    expose:
+      - "8080"
     links:
       - mongo
     depends_on:
       - mongo
-
+    container_name: web
+    env_file: ./compose/.env
+    environment:
+      - VIRTUAL_NETWORK=nginx-proxy
+      - VIRTUAL_PORT=8080
+  nginx:
+    build: ./compose/nginx
+    restart: always
+    depends_on:
+      - web
+    volumes_from:
+      - web
+    links:
+      - web
+    ports:
+      - "0.0.0.0:80:80"

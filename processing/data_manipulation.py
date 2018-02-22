@@ -4,14 +4,14 @@ import pandas
 import numpy
 import time
 
-def _index_to_ts(index):#TODO testing
+def _index_to_ts(index):
     """
     Takes a pandas dataframe timestamp index and converts it to unix time
     """
     return time.mktime(index.timetuple())
 
 
-def df_stitched_to_events(meeting_key, project_key, df): #TODO testing
+def df_stitched_to_events(meeting_key, project_key, df): 
     """
     Takes a pandas dataframe of stitched is_speaking values
     and returns a list speaking events of the format:
@@ -25,6 +25,7 @@ def df_stitched_to_events(meeting_key, project_key, df): #TODO testing
     }, ...]
     """
 
+    # this is p gross BUT
     # we have to rename the columns of the dataframe in case they start with a number
     # because it's possible they are invalid python identifiers
     # this gives us trouble with named tuples

@@ -3,13 +3,13 @@ version: '2'
 services:
   mongo:
     build: ./compose/mongo
-    ports:
-        - "27017:27017"
+    expose:
+        - "27017"
     volumes:
       - ./data:/data
 
   processing:
-    image: python:2.7
+    image: proc/python
     build: 
       dockerfile: ./compose/processing/Dockerfile.dev
       context: .
@@ -25,7 +25,7 @@ services:
     build: 
       dockerfile: ./compose/web/Dockerfile.dev
       context: .
-    command: python /app/app.py
+    command: python /app/api.py
     ports:
       - "5000:5000"
     volumes:

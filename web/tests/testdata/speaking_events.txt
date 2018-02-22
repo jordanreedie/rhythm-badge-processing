@@ -2,7 +2,7 @@
 { "_id" : ObjectId("589cf76700cf850001031ed6"), "meeting_key" : "QV1O6RWO61", "participant_key" : "GTHDD6INCV", "speaking_end" : 1486647830, "speaking_start" : 1486647814 }
 { "_id" : ObjectId("589cf76700cf850001031ed7"), "meeting_key" : "QV1O6RWO61", "participant_key" : "QPDQMH8K6Y", "speaking_end" : 1486647859, "speaking_start" : 1486647853 }
 { "_id" : ObjectId("589cf76700cf850001031ed8"), "meeting_key" : "QV1O6RWO61", "participant_key" : "QPDQMH8K6Y", "speaking_end" : 1486647867, "speaking_start" : 1486647860 }
-{ "_id" : ObjectId("589cf76700cf850001031ed9"), "meeting_key" : "QV1O6RWO61", "participant_key" : "C_QPDQMH8K6Y", "speaking_end" : 1486647910, "speaking_start" : 1486647907 }
+{ "_id" : ObjectId("589cf76700cf850001031ed9"), "meeting_key" : "QV1O6RWO61", "participant_key" : "QPDQMH8K6Y", "speaking_end" : 1486647910, "speaking_start" : 1486647907 }
 { "_id" : ObjectId("589cf76b00cf850001031edb"), "meeting_key" : "ATVY76SYOK", "participant_key" : "GTHDD6INCV", "speaking_end" : 1486648512, "speaking_start" : 1486648508 }
 { "_id" : ObjectId("589cf76b00cf850001031edc"), "meeting_key" : "ATVY76SYOK", "participant_key" : "GTHDD6INCV", "speaking_end" : 1486648533, "speaking_start" : 1486648513 }
 { "_id" : ObjectId("589cf76b00cf850001031edd"), "meeting_key" : "ATVY76SYOK", "participant_key" : "GTHDD6INCV", "speaking_end" : 1486648550, "speaking_start" : 1486648536 }
@@ -15,4 +15,4 @@
 { "_id" : ObjectId("589cf76b00cf850001031ee4"), "meeting_key" : "ATVY76SYOK", "participant_key" : "GTHDD6INCV", "speaking_end" : 1486648764, "speaking_start" : 1486648698 }
 { "_id" : ObjectId("589cf76b00cf850001031ee5"), "meeting_key" : "ATVY76SYOK", "participant_key" : "GTHDD6INCV", "speaking_end" : 1486648827, "speaking_start" : 1486648765 }
 { "_id" : ObjectId("589cf76b00cf850001031ee6"), "meeting_key" : "ATVY76SYOK", "participant_key" : "QPDQMH8K6Y", "speaking_end" : 1486648934, "speaking_start" : 1486648860 }
-{ "_id" : ObjectId("589cf76b00cf850001031ee7"), "meeting_key" : "ATVY76SYOK", "participant_key" : "C_GTHDD6INCV", "speaking_end" : 1486648998, "speaking_start" : 1486648934 }
+{ "_id" : ObjectId("589cf76b00cf850001031ee7"), "meeting_key" : "ATVY76SYOK", "participant_key" : "GTHDD6INCV", "speaking_end" : 1486648998, "speaking_start" : 1486648934 }
